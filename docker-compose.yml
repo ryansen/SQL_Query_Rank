@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: queryrank_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-queryrank}
+      POSTGRES_USER: ${POSTGRES_USER:-queryrank}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-queryrank}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - queryrank_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-queryrank} -d ${POSTGRES_DB:-queryrank}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  queryrank_pgdata:
+    driver: local

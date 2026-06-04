@@ -1,0 +1,1 @@
+"""QueryRank CLI command groups."""

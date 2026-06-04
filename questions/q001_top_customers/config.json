@@ -1,0 +1,8 @@
+{
+  "id": "q001_top_customers",
+  "title": "Top Customers by Revenue",
+  "difficulty": "medium",
+  "tags": ["aggregation", "joins", "ranking"],
+  "default_dataset_size": "medium",
+  "description": "Find the top 10 customers by total order revenue."
+}

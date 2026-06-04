@@ -1,0 +1,8 @@
+{
+  "id": "q002_monthly_revenue",
+  "title": "Monthly Revenue Trend",
+  "difficulty": "easy",
+  "tags": ["aggregation", "date-functions", "time-series"],
+  "default_dataset_size": "medium",
+  "description": "Calculate total completed revenue per month, ordered chronologically."
+}
