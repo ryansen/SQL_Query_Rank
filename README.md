@@ -24,11 +24,35 @@ cd queryrank
 uv sync
 ```
 
+To run `queryrank` directly instead of `uv run queryrank`, activate the project
+virtualenv in each new terminal:
+
+```bash
+source .venv/Scripts/activate   # Git Bash on Windows
+queryrank login --username alice
+```
+
+If `queryrank.exe` points at an old Python install, rebuild the virtualenv first:
+
+```bash
+rm -rf .venv
+uv sync
+source .venv/Scripts/activate
+```
+
 ### Start PostgreSQL
 
 ```bash
 cp .env.example .env          # edit if needed
 docker compose up -d
+```
+
+If the container is running but `queryrank` reports `password authentication
+failed for user "queryrank"`, reset the password stored in the existing Docker
+volume:
+
+```bash
+docker exec -u postgres queryrank_postgres psql -U queryrank -d queryrank -c "ALTER USER queryrank WITH PASSWORD 'queryrank';"
 ```
 
 ---

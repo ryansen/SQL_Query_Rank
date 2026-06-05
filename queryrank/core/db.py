@@ -39,9 +39,17 @@ def get_connection(
         with psycopg.connect(dsn, autocommit=autocommit) as conn:
             yield conn
     except psycopg.OperationalError as exc:
+        hint = "[dim]Is Docker running?  Try: docker compose up -d[/]"
+        if "password authentication failed" in str(exc).lower():
+            hint = (
+                "[dim]PostgreSQL is running, but the saved Docker volume has a "
+                "different password. Reset it with: "
+                "docker exec -u postgres queryrank_postgres psql -U queryrank "
+                "-d queryrank -c \"ALTER USER queryrank WITH PASSWORD 'queryrank';\"[/]"
+            )
         console.print(
             f"[bold red]✗[/] Cannot connect to PostgreSQL: {exc}\n"
-            "[dim]Is Docker running?  Try: docker compose up -d[/]"
+            f"{hint}"
         )
         raise SystemExit(1)
 
