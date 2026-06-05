@@ -1,0 +1,12 @@
+{
+  "id": "q003_late_shipments",
+  "title": "Late Shipments",
+  "difficulty": "medium",
+  "tags": [
+    "joins",
+    "dates",
+    "aggregation"
+  ],
+  "default_dataset_size": "medium",
+  "description": "TODO: one-sentence description of the task."
+}

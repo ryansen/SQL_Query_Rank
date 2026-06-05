@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
-from rich import box
 
 from queryrank.core.explain import PlanFeatures
 from queryrank.core.linter import LintWarning, Severity
@@ -57,7 +55,7 @@ def print_benchmark_table(
 
     for label, ms in all_items:
         is_user = label == "Your query"
-        flag = "[bold yellow]★ YOU[/]" if is_user else ""
+        flag = "[bold yellow]* YOU[/]" if is_user else ""
         style = "bold yellow" if is_user else ""
         table.add_row(label, f"{ms:.2f}", flag, style=style)
 
@@ -72,15 +70,25 @@ def print_plan_summary(features: PlanFeatures) -> None:
     console.print()
 
 
+def print_performance_analysis(features: PlanFeatures) -> None:
+    console.print(Rule("[bold]Why It Might Be Slow[/]"))
+    for line in features.analysis_lines():
+        console.print(f"  - {line}")
+    console.print()
+
+
 def print_lint_warnings(warnings: list[LintWarning]) -> None:
     console.print(Rule("[bold]SQL Lint[/]"))
     if not warnings:
         console.print("  [green]No issues found.[/]\n")
         return
+
     for w in warnings:
-        icon = "⚠" if w.severity == Severity.WARNING else "ℹ"
+        icon = "!" if w.severity == Severity.WARNING else "i"
         color = "yellow" if w.severity == Severity.WARNING else "dim"
         console.print(f"  [{color}]{icon} [{w.code}][/] {w.message}")
+        if w.suggestion:
+            console.print(f"      [dim]Try:[/] {w.suggestion}")
     console.print()
 
 
@@ -92,9 +100,9 @@ def print_score_card(score: QueryScore) -> None:
     table.add_column("Max", justify="right", style="dim")
 
     table.add_row("Correctness", f"{score.correctness_score:.0f}", "50")
-    table.add_row("Runtime",     f"{score.runtime_score_val:.1f}", "25")
-    table.add_row("Query Plan",  f"{score.plan_score:.1f}",        "15")
-    table.add_row("SQL Style",   f"{score.lint_score_val:.0f}",    "10")
+    table.add_row("Runtime", f"{score.runtime_score_val:.1f}", "25")
+    table.add_row("Query Plan", f"{score.plan_score:.1f}", "15")
+    table.add_row("SQL Style", f"{score.lint_score_val:.0f}", "10")
     table.add_row(
         "[bold]TOTAL[/]",
         f"[bold]{score.total:.1f}[/]",
@@ -111,4 +119,15 @@ def print_score_card(score: QueryScore) -> None:
 def print_explain_json(features: PlanFeatures) -> None:
     """Pretty-print the raw EXPLAIN JSON."""
     import json
+
     console.print_json(json.dumps(features.raw_plan, indent=2))
+
+
+def print_suggestions(*commands: str) -> None:
+    """Print suggested next commands."""
+    commands = tuple(cmd for cmd in commands if cmd)
+    if not commands:
+        return
+
+    body = "\n".join(f"[cyan]{cmd}[/]" for cmd in commands)
+    console.print(Panel(body, title="[bold]Suggested Next Move[/]", border_style="cyan"))

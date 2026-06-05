@@ -13,6 +13,12 @@ build/
 
 # Environment
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 
 # IDE
 .vscode/
@@ -26,3 +32,4 @@ Thumbs.db
 # QueryRank runtime
 *.sql.tmp
 answer_*.sql
+context_*.md

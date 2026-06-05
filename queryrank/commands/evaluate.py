@@ -13,7 +13,7 @@ from queryrank.core.profile import UserProfile
 from queryrank.core.executor import compare_against_references, run_query, run_sql_file
 from queryrank.core.explain import explain_query
 from queryrank.core.benchmark import benchmark_query, benchmark_references
-from queryrank.core.linter import lint_query, lint_score
+from queryrank.core.linter import lint_query
 from queryrank.core.scoring import QueryScore, rank_solutions
 from queryrank.core import reporter
 
@@ -89,8 +89,10 @@ def submit(
     # 10. Report
     reporter.print_benchmark_table(user_bench.median_ms, ref_medians, score.rank, score.total_solutions)
     reporter.print_plan_summary(plan)
+    reporter.print_performance_analysis(plan)
     reporter.print_lint_warnings(warnings)
     reporter.print_score_card(score)
+    _print_submit_suggestions(question_id, answer_file, size, runs, is_correct, score.rank)
 
     # 11. Persist to profile
     profile = UserProfile.load()
@@ -122,8 +124,13 @@ def explain(
         plan = explain_query(conn, user_sql)
 
     reporter.print_plan_summary(plan)
+    reporter.print_performance_analysis(plan)
     if raw:
         reporter.print_explain_json(plan)
+    reporter.print_suggestions(
+        f"queryrank submit {question_id} {answer_file} --size large --runs 10",
+        f"queryrank benchmark {question_id} {answer_file} --size large --runs 20",
+    )
 
 
 # ------------------------------------------------------------------
@@ -154,6 +161,10 @@ def benchmark(
     ref_medians = {label: b.median_ms for label, b in ref_benches.items()}
     rank, total = rank_solutions(user_bench.median_ms, ref_medians)
     reporter.print_benchmark_table(user_bench.median_ms, ref_medians, rank, total)
+    reporter.print_suggestions(
+        f"queryrank submit {question_id} {answer_file} --size {size} --runs {runs}",
+        f"queryrank explain {question_id} {answer_file} --size {size}",
+    )
 
 
 # ------------------------------------------------------------------
@@ -181,3 +192,25 @@ def _read_sql(path: Path) -> str:
         console.print(f"[red]File not found:[/] {path}")
         raise typer.Exit(1)
     return path.read_text().strip()
+
+
+def _print_submit_suggestions(
+    question_id: str,
+    answer_file: Path,
+    size: str,
+    runs: int,
+    is_correct: bool,
+    rank: int,
+) -> None:
+    commands: list[str] = []
+
+    if not is_correct:
+        commands.append(f"queryrank start {question_id} --size {size}")
+        commands.append(f"queryrank explain {question_id} {answer_file} --size {size}")
+    elif size != "large" or runs < 10:
+        commands.append(f"queryrank submit {question_id} {answer_file} --size large --runs 10")
+    elif rank > 1:
+        commands.append(f"queryrank explain {question_id} {answer_file} --size large --raw")
+
+    commands.append(f"queryrank benchmark {question_id} {answer_file} --size large --runs 20")
+    reporter.print_suggestions(*commands)

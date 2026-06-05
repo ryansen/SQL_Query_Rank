@@ -30,7 +30,8 @@ def generate(conn, size: str = "medium") -> None:
         status = random.choices(STATUSES, weights=WEIGHTS, k=1)[0]
         rows.append((i, d, amount, status))
 
-    conn.executemany(
-        "INSERT INTO orders (id, order_date, amount, status) VALUES (%s, %s, %s, %s)",
-        rows,
-    )
+    with conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO orders (id, order_date, amount, status) VALUES (%s, %s, %s, %s)",
+            rows,
+        )

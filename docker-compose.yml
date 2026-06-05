@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-queryrank}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-queryrank}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - queryrank_pgdata:/var/lib/postgresql/data
     healthcheck:

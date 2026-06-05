@@ -36,10 +36,11 @@ def generate(conn, size: str = "medium") -> None:
         seen_emails.add(email)
         customers.append((i, fake.name(), email, random.choice(REGIONS)))
 
-    conn.executemany(
-        "INSERT INTO customers (id, name, email, region) VALUES (%s, %s, %s, %s)",
-        customers,
-    )
+    with conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO customers (id, name, email, region) VALUES (%s, %s, %s, %s)",
+            customers,
+        )
 
     # --- Orders ---
     # Introduce skew: top 10 customers get proportionally more orders
@@ -61,11 +62,12 @@ def generate(conn, size: str = "medium") -> None:
         status = random.choices(STATUSES, weights=STATUS_WEIGHTS, k=1)[0]
         orders.append((i, cid, order_date, amount, status))
 
-    conn.executemany(
-        "INSERT INTO orders (id, customer_id, order_date, amount, status) "
-        "VALUES (%s, %s, %s, %s, %s)",
-        orders,
-    )
+    with conn.cursor() as cur:
+        cur.executemany(
+            "INSERT INTO orders (id, customer_id, order_date, amount, status) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            orders,
+        )
 
     # Edge cases: a few customers with ONLY cancelled/pending orders
     edge_customer_id = n_customers + 1
