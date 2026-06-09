@@ -149,26 +149,25 @@ def _walk_plan(node: dict[str, Any], features: PlanFeatures) -> None:
     actual_rows = float(node.get("Actual Rows", 0) or 0)
     plan_rows = float(node.get("Plan Rows", 0) or 0)
 
-    match node_type:
-        case "Seq Scan":
-            features.seq_scans += 1
-            if relation:
-                features.seq_scan_tables.append(str(relation))
-            features.rows_removed_by_filter += int(node.get("Rows Removed by Filter", 0) or 0)
-        case "Index Scan":
-            features.index_scans += 1
-        case "Index Only Scan":
-            features.index_only_scans += 1
-        case "Hash Join":
-            features.hash_joins += 1
-        case "Merge Join":
-            features.merge_joins += 1
-        case "Nested Loop":
-            features.nested_loops += 1
-        case "Sort":
-            features.sorts += 1
-        case s if "Aggregate" in s:
-            features.aggregates += 1
+    if node_type == "Seq Scan":
+        features.seq_scans += 1
+        if relation:
+            features.seq_scan_tables.append(str(relation))
+        features.rows_removed_by_filter += int(node.get("Rows Removed by Filter", 0) or 0)
+    elif node_type == "Index Scan":
+        features.index_scans += 1
+    elif node_type == "Index Only Scan":
+        features.index_only_scans += 1
+    elif node_type == "Hash Join":
+        features.hash_joins += 1
+    elif node_type == "Merge Join":
+        features.merge_joins += 1
+    elif node_type == "Nested Loop":
+        features.nested_loops += 1
+    elif node_type == "Sort":
+        features.sorts += 1
+    elif "Aggregate" in node_type:
+        features.aggregates += 1
 
     removed = int(node.get("Rows Removed by Filter", 0) or 0)
     if removed >= 1_000:

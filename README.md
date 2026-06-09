@@ -6,7 +6,7 @@ QueryRank is a PostgreSQL-based SQL practice and query evaluation CLI. It helps 
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.8+
 - [uv](https://docs.astral.sh/uv/) package manager
 - [Docker](https://www.docker.com/) (for the local PostgreSQL instance)
 
